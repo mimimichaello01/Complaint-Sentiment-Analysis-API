@@ -60,6 +60,11 @@ class ApiIpConfig(BaseSettings):
     url: str
     timeout: float = 5.0
 
+class ApiMistralConfig(BaseSettings):
+    key: str
+    url: str
+    timeout: float = 30.0
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -75,6 +80,7 @@ class Settings(BaseSettings):
     api_layer: ApiLayerConfig
     api_ninjas: ApiNinjasConfig
     api_ip: ApiIpConfig
+    api_mistral: ApiMistralConfig
 
 
 settings = Settings()  # type: ignore

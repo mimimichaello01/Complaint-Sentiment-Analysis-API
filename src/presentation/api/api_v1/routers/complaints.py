@@ -19,5 +19,5 @@ async def create_complaint(
     request: Request,
     service: ComplaintServiceImpl = Depends(get_complaint_service)
 ):
-    ip_address = service.geo_ip_client.get_ip(request)
+    ip_address = service.builder.geo_ip_client.get_ip(request)
     return await service.create_complaint(data, ip_address)

@@ -17,5 +17,6 @@ class ComplaintRepositoryImpl(AbstractComplaintRepository):
 
     async def create(self, complaint: Complaint) -> Complaint:
         self.session.add(complaint)
-        await self.session.flush()
+        await self.session.commit()
+        await self.session.refresh(complaint)
         return complaint

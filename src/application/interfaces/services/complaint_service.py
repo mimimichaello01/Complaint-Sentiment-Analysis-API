@@ -12,5 +12,6 @@ class AbstractComplaintService(ABC):
     async def get_complaint_by_id(self, complaint_id: UUID) -> Optional[Complaint]:
         ...
 
-    async def create_complaint(self, data: ComplaintCreateDTO) -> Complaint:
+    @abstractmethod
+    async def create_complaint(self, data: ComplaintCreateDTO, ip_address: str) -> Complaint:
         ...
