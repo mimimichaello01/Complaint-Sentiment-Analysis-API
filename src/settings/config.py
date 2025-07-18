@@ -46,25 +46,42 @@ class DatabaseConfig(BaseModel):
     }
 
 
-class ApiLayerConfig(BaseSettings):
+class ApiLayerConfig(BaseModel):
     key: str
     url: str
     timeout: float = 30.0
 
-class ApiNinjasConfig(BaseSettings):
+class ApiNinjasConfig(BaseModel):
     key: str
     url: str
     timeout: float = 30.0
 
-class ApiIpConfig(BaseSettings):
+class ApiIpConfig(BaseModel):
     url: str
     timeout: float = 5.0
 
-class ApiMistralConfig(BaseSettings):
+class ApiMistralConfig(BaseModel):
     key: str
     url: str
     timeout: float = 30.0
 
+
+class RabbitMQConfig(BaseModel):
+    host: str
+    port: int
+    user: str
+    password: str
+
+
+class CeleryConfig(BaseModel):
+    broker_url: str
+    result_backend: str
+
+
+class RedisSettings(BaseModel):
+    host: str
+    port: int
+    db: int
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -81,6 +98,8 @@ class Settings(BaseSettings):
     api_ninjas: ApiNinjasConfig
     api_ip: ApiIpConfig
     api_mistral: ApiMistralConfig
-
+    rabbitmq: RabbitMQConfig
+    celery: CeleryConfig
+    redis: RedisSettings
 
 settings = Settings()  # type: ignore

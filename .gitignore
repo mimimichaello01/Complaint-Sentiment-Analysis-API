@@ -124,6 +124,7 @@ celerybeat.pid
 # Environments
 .env
 .env.dev
+.env.rabbitmq.env
 .venv
 env/
 venv/

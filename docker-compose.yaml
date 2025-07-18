@@ -15,7 +15,50 @@ services:
       - "8000:8000"
     env_file:
       - ./src/.env.dev
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    hostname: rabbitmq
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - ./src/.env.rabbitmq.env
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: celery-worker
+    command: celery -A infra.celery.celery_app:celery_app worker -Q emails,google_sheets --loglevel=info
+    volumes:
+      - .:/app
+      - sqlite_data:/app/src/data
+      - tmp_data:/tmp
+    depends_on:
+      - redis
+      - main-app
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    env_file:
+      - ./src/.env.dev
 
 volumes:
   sqlite_data:
-
+  rabbitmq-data:
+  tmp_data:
