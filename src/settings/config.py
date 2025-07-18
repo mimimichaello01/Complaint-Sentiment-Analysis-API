@@ -83,6 +83,14 @@ class RedisSettings(BaseModel):
     port: int
     db: int
 
+class GMailConfig(BaseModel):
+    username: str
+    password: str
+    host: str
+    port: int
+    mail_from: str
+    use_tls: bool
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env.dev",
@@ -101,5 +109,6 @@ class Settings(BaseSettings):
     rabbitmq: RabbitMQConfig
     celery: CeleryConfig
     redis: RedisSettings
+    gmail: GMailConfig
 
 settings = Settings()  # type: ignore
