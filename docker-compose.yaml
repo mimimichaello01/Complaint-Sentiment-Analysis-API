@@ -44,7 +44,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: celery-worker
-    command: celery -A infra.celery.celery_app:celery_app worker -Q emails,google_sheets --loglevel=info
+    command: celery -A infra.celery.celery_app:celery_app worker -Q emails --loglevel=info
     volumes:
       - .:/app
       - sqlite_data:/app/src/data
@@ -52,9 +52,6 @@ services:
     depends_on:
       - redis
       - main-app
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     env_file:
       - ./src/.env.dev
 

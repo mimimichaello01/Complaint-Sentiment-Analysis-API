@@ -90,6 +90,7 @@ class GMailConfig(BaseModel):
     port: int
     mail_from: str
     use_tls: bool
+    notification_email: str  
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(

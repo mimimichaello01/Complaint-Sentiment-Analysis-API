@@ -1,6 +1,5 @@
 from uuid import UUID
-from infra.exceptions.mail import EmailSendException
-from settings.config import settings
+
 from typing import Optional
 
 from application.builders.complaint_builder import ComplaintBuilder
@@ -17,7 +16,7 @@ from application.validators.complaint_validator import ComplaintValidator
 from application.exceptions.complaint import ComplaintNotFoundException
 
 
-from infra.mail.gmail import GMailSender
+from infra.celery.tasks.complaint_tasks import send_complaint_email_task
 from infra.models.complaints import Complaint
 
 
@@ -61,16 +60,8 @@ class ComplaintServiceImpl(AbstractComplaintService):
 
         await self.complaint_repo.create(complaint)
 
-        # gmail_sender = GMailSender(settings.gmail)
-        # try:
-        #     await gmail_sender.send_mail(
-        #         to="sashamorozov97@mail.ru",
-        #         subject="Новая жалоба создана",
-        #         body=f"Поступила новая жалоба с текстом:\n{data.text}",
-        #         html=False,
-        #     )
-        # except EmailSendException:
-        #     logger.error("Не удалось отправить уведомление по почте")
+        if complaint.category == "Technical":
+            send_complaint_email_task.apply_async(args=[complaint.id, complaint.text, complaint.category], queue='emails')
 
         logger.info(f"Complaint created: {complaint.id}")
         return complaint

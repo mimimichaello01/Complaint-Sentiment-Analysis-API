@@ -13,6 +13,7 @@ from infra.http_clients.ninjas_api_client import ProfanityApiClient
 from infra.http_clients.sentiment_api_client import SentimentApiClient
 from infra.repositories.complaint_repository_impl import ComplaintRepositoryImpl
 
+from settings.config import settings
 
 def get_complaint_repository(
     db=Depends(db_halper.session_getter),
@@ -53,6 +54,8 @@ def get_complaint_enricher(
     mistral_client: MistralApiClient = Depends(get_mistral_client),
 ) -> ComplaintEnricher:
     return ComplaintEnricher(sentiment_client, mistral_client)
+
+
 
 def get_complaint_service(
     repo: AbstractComplaintRepository = Depends(get_complaint_repository),
