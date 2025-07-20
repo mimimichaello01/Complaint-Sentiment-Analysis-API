@@ -1,8 +1,8 @@
+from logging.handlers import RotatingFileHandler
 import os
 import sys
 import logging
-from logging.handlers import RotatingFileHandler
-
+from logger.kafka_handler import KafkaLoggingHandler
 from settings.config import settings
 
 
@@ -23,7 +23,7 @@ def setup_logger(name: str = "app") -> logging.Logger:
     stream_handler.setFormatter(formatter)
     logger.addHandler(stream_handler)
 
-    # File handler with rotation
+    #File handler with rotation
     if settings.logger.log_to_file:
         log_file = "logs/app.log"
         log_dir = os.path.dirname(log_file)
@@ -37,5 +37,14 @@ def setup_logger(name: str = "app") -> logging.Logger:
         )
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
+
+    if settings.logger.log_to_kafka:
+
+        kafka_handler = KafkaLoggingHandler(
+            topic=settings.logger.kafka_topic,
+            bootstrap_servers=settings.logger.kafka_bootstrap_servers
+        )
+        kafka_handler.setFormatter(formatter)
+        logger.addHandler(kafka_handler)
 
     return logger

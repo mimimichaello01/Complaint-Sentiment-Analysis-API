@@ -1,0 +1,28 @@
+version: '3.9'
+
+services:
+  main-app:
+    container_name: main-app
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    working_dir: /app/src
+    command: uvicorn --factory main:create_app --reload --host 0.0.0.0 --port 8000
+    environment:
+      - PYTHONPATH=/app/src
+    volumes:
+      - ../:/app
+      - sqlite_data:/app/src/data
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../src/.env.dev
+    depends_on:
+      - rabbitmq
+      - kafka
+      - zookeeper
+    restart: unless-stopped
+
+networks:
+  complaints_app_network:
+    driver: bridge

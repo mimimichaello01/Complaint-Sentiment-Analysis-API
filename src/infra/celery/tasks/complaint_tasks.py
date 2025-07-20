@@ -27,7 +27,7 @@ async def send_complaint_notification(
 
     try:
         await gmail_sender.send_mail(
-            to="sashamorozov971771@mail.ru",
+            to="sashamorozov97@mail.ru",
             subject="Новая жалоба создана",
             body=body,
             html=False,
@@ -43,9 +43,9 @@ async def send_complaint_notification(
 def send_complaint_email_task(
     self, complaint_id: str, complaint_text: str, complaint_category: str
 ):
-    gmail_sender = GMailSender(settings.gmail)
+    sender = GMailSender(settings.gmail)
     asyncio.run(
         send_complaint_notification(
-            complaint_id, complaint_text, complaint_category, gmail_sender
+            complaint_id, complaint_text, complaint_category, sender
         )
     )

@@ -10,10 +10,15 @@ class LoggerConfig(BaseModel):
     format: str = (
         "[%(asctime)s.%(msecs)03d] %(module)10s:%(lineno)-3d %(levelname)-7s - %(message)s"
     )
-    log_to_file: bool = True
+    log_to_file: bool = False
     max_bytes: int = 10 * 1024 * 1024
     backup_count: int = 5
     datefmt: str = "%Y-%m-%d %H:%M:%S"
+
+
+    log_to_kafka: bool = True
+    kafka_topic: str = "app-logs"
+    kafka_bootstrap_servers: str = "kafka:9092"
 
 
 class RunConfig(BaseModel):
@@ -90,7 +95,7 @@ class GMailConfig(BaseModel):
     port: int
     mail_from: str
     use_tls: bool
-    notification_email: str  
+    notification_email: str
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(

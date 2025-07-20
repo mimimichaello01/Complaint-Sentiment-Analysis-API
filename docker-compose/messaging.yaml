@@ -1,0 +1,45 @@
+version: '3.9'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    hostname: rabbitmq
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - ../src/.env.rabbitmq.env
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  celery_worker:
+    container_name: celery-worker
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: celery -A infra.celery.celery_app:celery_app worker -Q emails --loglevel=info
+    volumes:
+      - ../:/app
+      - sqlite_data:/app/src/data
+      - tmp_data:/tmp
+    depends_on:
+      - redis
+      - main-app
+      - kafka
+      - zookeeper
+    env_file:
+      - ../src/.env.dev
+
+networks:
+  default:
+    external: true
+    name: complaints_app_network

@@ -1,18 +1,22 @@
-.PHONY: up down logs makemigrations migrate
+COMPOSE = docker-compose \
+	-f docker-compose/volumes.yaml \
+	-f docker-compose/messaging.yaml \
+	-f docker-compose/app.yaml \
+	-f docker-compose/logging.yaml \
+
+.PHONY: up down logs clean
 
 up:
-	docker-compose up --build -d
+	$(COMPOSE) up --build -d
 
 down:
-	docker-compose down
+	$(COMPOSE) down
 
 logs:
-	docker-compose logs -f
+	$(COMPOSE) logs -f
 
-# Очистить ненужные контейнеры, тома, образы (опционально)
 clean:
-	docker-compose down -v --rmi all --remove-orphans
-
+	$(COMPOSE) down -v --rmi all --remove-orphans
 
 makemigrations:
 	alembic revision --autogenerate -m "$(m)"
