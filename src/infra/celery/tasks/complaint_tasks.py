@@ -27,7 +27,7 @@ async def send_complaint_notification(
 
     try:
         await gmail_sender.send_mail(
-            to="sashamorozov97@mail.ru",
+            to="your-mail@.com",
             subject="Новая жалоба создана",
             body=body,
             html=False,
