@@ -3,92 +3,144 @@
 
 API для приёма жалоб клиентов с анализом тональности текста и проверкой на нецензурную лексику с помощью внешних сервисов. Кроме того, реализована определение геолокации пользователя по IP-адресу. Приложение построено на FastAPI с использованием SQLite, Docker и Alembic.
 
-## Описание
+## Ключевые особенности
 
-- Принимает POST-запросы с текстом жалобы (например, {"text": "SMS code is not received"}).
+- **Анализ тональности** текста жалоб через Sentiment Analysis API
+- **Фильтрация нецензурной лексики** с помощью Profanity Filter API
+- **Геолокация** по IP-адресу клиента
+- **Категоризация жалоб** (Технические, Платежи, Другое)
+- **Асинхронная обработка** технических жалоб через Celery + RabbitMQ
+- **Централизованное логирование** в ELK через Kafka
 
-- Проверяет текст на нецензурную лексику с помощью Profanity Filter API.
+## Основные компоненты
 
-- Получает IP клиента из запроса и определяет геолокацию через IP API.
+  - Все жалобы сохраняются в SQLite
+  - Жалобы с категорией "Технические" отправляются в очередь Celery
+  - Для технических жалоб автоматически генерируется и отправляется email уведомление
 
-- Отправляет текст жалобы на Sentiment Analysis API (APILayer).
+## Логирование
 
-- Сохраняет жалобу в SQLite с полями:
+  - Все события приложения логируются в Kafka
+  - Логи агрегируются в ELK (Elasticsearch + Logstash + Kibana)
+  - Доступен полнотекстовый поиск и анализ логов
 
-    - id — UUID жалобы.
-    - text — текст жалобы.
-    - status — статус (по умолчанию "Open").
-    - timestamp — время создания.
-    - sentiment — тональность (Positive, Negative, Neutral, Unknown).
-    - category — категория жалобы (по умолчанию "Other").
-    - ip, country, region, city — данные геолокации клиента.
-
-- Обрабатывает ошибки:
-
-    - Если внешний API Sentiment Analysis недоступен — сохраняет sentiment: "Unknown".
-    - Если геолокация не найдена — сохраняет IP, остальные поля null.
-    - При обнаружении мата в тексте — возвращает ошибку с 400.
 
 ## Структура проекта:
 ```
 .
 ├── alembic.ini
-├── docker-compose.yaml
+├── docker-compose
+│   ├── app.yaml
+│   ├── logging.yaml
+│   ├── logstash
+│   │   └── logstash.conf
+│   ├── messaging.yaml
+│   └── volumes.yaml
 ├── Dockerfile
 ├── Makefile
 ├── poetry.lock
 ├── pyproject.toml
-└── src
-    ├── alembic              # миграции базы данных
-    ├── application          # бизнес-логика, DTO, сервисы
-    ├── data                 # файл базы данных SQLite
-    ├── exceptions           # обработка ошибок
-    ├── infra                # доступ к БД, HTTP клиенты, модели
-    ├── logger               # логирование
-    ├── logs                 # файлы логов
-    ├── main.py              # точка входа FastAPI приложения
-    ├── presentation         # API-роуты
-    ├── settings             # конфигурации
-    └── utils                # утилиты
+├── README.md
+├── src
+│   ├── alembic
+│   │   ├── env.py
+│   │   ├── __pycache__
+│   │   ├── README
+│   │   ├── script.py.mako
+│   │   └── versions
+│   ├── alembic.ini
+│   ├── application
+│   │   ├── builders
+│   │   ├── dto
+│   │   ├── enrichers
+│   │   ├── exceptions
+│   │   ├── __init__.py
+│   │   ├── interfaces
+│   │   ├── schemas
+│   │   ├── service
+│   │   └── validators
+│   ├── data
+│   │   └── test.db
+│   ├── exceptions
+│   │   ├── exception_handlers.py
+│   │   └── __init__.py
+│   ├── infra
+│   │   ├── celery
+│   │   ├── db
+│   │   ├── exceptions
+│   │   ├── http_clients
+│   │   ├── __init__.py
+│   │   ├── mail
+│   │   ├── mappers
+│   │   ├── models
+│   │   └── repositories
+│   ├── logger
+│   │   ├── __init__.py
+│   │   ├── kafka_handler.py
+│   │   └── logger.py
+│   ├── logs
+│   │   └── app.log
+│   ├── main.py
+│   ├── presentation
+│   │   ├── api
+│   │   └── __init__.py
+│   ├── settings
+│   │   ├── config.py
+│   │   └── __init__.py
+│   └── utils
+│       ├── case_converter.py
+│       └── __init__.py
 ```
 
-## Установка:
+## Установка и запуск
+
+### Требования
+
+  - Docker и Docker Compose
+  - Python 3.12
+  - Poetry
+
+### Установка
+
 ```bash
 git clone <repo-url>
 cd <repo-folder>
-
 poetry install
 ```
 
-```bash
-### Если база еще не создана, выполните миграции:
+### Запуск
 
-cd src
-alembic revision --autogenerate -m "create table"
-alembic upgrade head
-```
-## Запуск:
 ```bash
-make up # запускает docker-compose с настройками приложения
+make up  # Запускает все сервисы через docker-compose
 ```
-## API
+
+##### После запуска будут доступны:
+
+  - FastAPI приложение: http://localhost:8000
+  - Kibana (для просмотра логов): http://localhost:5601
+  - RabbitMQ management: http://localhost:15672
+
+## API Endpoints
 
 ### Добавить жалобу
 
-Тело запроса:
+##### Запрос:
+
 ```json
 {
   "text": "SMS code is not received"
 }
 ```
-Ответ:
+
+##### Ответ:
+
 ```json
 {
   "id": "62ad65d7-4721-4ccf-ab5a-911249db870a",
-  "text": "IP check",
+  "text": "SMS code is not received",
   "status": "Open",
   "sentiment": "Neutral",
-  "category": "Other",
+  "category": "Technical",
   "ip": "172.20.0.1",
   "country": "Russia",
   "region": "Krasnodar Krai",
@@ -97,12 +149,28 @@ make up # запускает docker-compose с настройками прило
 }
 ```
 
-## Пояснения к полям ответа:
-- **id** — UUID жалобы, уникальный идентификатор.
-- **text** — текст жалобы, как пришёл от клиента.
-- **status** — статус жалобы (Open/Closed).
-- **sentiment** — тональность текста (Positive/Negative/Neutral/Unknown).
-- **category** — категория жалобы (Technical/Payment/Other).
-- **ip** — IP-адрес клиента, полученный из запроса.
-- **country, region, city** — геолокация по IP (через IP API).
-- **created_at** — timestamp создания записи.
+### Пояснения к полям ответа:
+
+  - id — UUID жалобы, уникальный идентификатор
+  - text — оригинальный текст жалобы
+  - status — статус обработки (Open/Closed)
+  - sentiment — тональность текста (Positive/Negative/Neutral/Unknown)
+  - category — категория жалобы (Technical/Payment/Other)
+  - ip — IP-адрес клиента
+  - country/region/city — геолокационные данные
+  - created_at — дата и время создания
+
+## Мониторинг и логирование
+
+Все логи приложения отправляются в Kafka и агрегируются в ELK. Для просмотра логов:
+
+  1. Откройте Kibana: http://localhost:5601
+  2. Создайте index pattern fastapi-logs*
+  3. Используйте Discover для поиска и анализа логов
+
+## Дополнительные команды
+
+```bash
+make logs      # Просмотр логов приложения
+make down      # Остановка всех сервисов
+```
