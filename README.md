@@ -24,6 +24,11 @@ API для приёма жалоб клиентов с анализом тона
   - Логи агрегируются в ELK (Elasticsearch + Logstash + Kibana)
   - Доступен полнотекстовый поиск и анализ логов
 
+## Мониторинг
+
+  - Prometheus собирает метрики с FastAPI через endpoint /metrics
+  - Grafana подключена к Prometheus для визуализации метрик
+  - Преднастроенный дашборд отображает основные HTTP-метрики и состояние сервиса
 
 ## Структура проекта:
 ```
@@ -35,6 +40,9 @@ API для приёма жалоб клиентов с анализом тона
 │   ├── logstash
 │   │   └── logstash.conf
 │   ├── messaging.yaml
+│   ├── monitoring.yaml
+│   ├── prometheus
+│   │   └── prometheus.yml
 │   └── volumes.yaml
 ├── Dockerfile
 ├── Makefile
@@ -119,6 +127,7 @@ make up  # Запускает все сервисы через docker-compose
   - FastAPI приложение: http://localhost:8000
   - Kibana (для просмотра логов): http://localhost:5601
   - RabbitMQ management: http://localhost:15672
+  - Grafana (для мониторинга): http://localhost:3000
 
 ## API Endpoints
 
@@ -168,9 +177,14 @@ make up  # Запускает все сервисы через docker-compose
   2. Создайте index pattern fastapi-logs*
   3. Используйте Discover для поиска и анализа логов
 
+  - Метрики приложения собираются Prometheus по endpoint /metrics.
+  - Для визуализации метрик используйте Grafana: http://localhost:3000
+  - В Grafana доступен дашборд с основными HTTP метриками (запросы, ошибки, время ответа).
+
 ## Дополнительные команды
 
 ```bash
 make logs      # Просмотр логов приложения
 make down      # Остановка всех сервисов
+make clean     # Полная очистка всех ресурсов проекта
 ```
