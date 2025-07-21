@@ -22,6 +22,8 @@ services:
       - kafka
       - zookeeper
     restart: unless-stopped
+    networks:
+      - complaints_app_network
 
 networks:
   complaints_app_network:

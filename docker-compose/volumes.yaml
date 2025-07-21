@@ -3,7 +3,7 @@ volumes:
   sqlite_data:
   rabbitmq-data:
   tmp_data:
-  clickhouse-data:
+  grafana_data:
 
 networks:
   default:

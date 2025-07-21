@@ -1,8 +1,5 @@
 from fastapi import FastAPI
 from fastapi import APIRouter
-from fastapi import Request
-
-from fastapi.responses import JSONResponse
 
 from contextlib import asynccontextmanager
 
@@ -12,6 +9,8 @@ from settings.config import settings
 from infra.db import db_halper
 
 from presentation.api.api_v1.routers.complaints import complaint_router
+
+from prometheus_fastapi_instrumentator import Instrumentator
 
 
 @asynccontextmanager
@@ -37,6 +36,8 @@ def create_app() -> FastAPI:
 
     # Регистрация кастомного обработчика исключений
     register_exception_handlers(app)
+
+    Instrumentator().instrument(app).expose(app)
 
     app.include_router(api_router)
     return app
